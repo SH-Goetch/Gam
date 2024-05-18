@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Full path to the GAM executable
-GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
-
-# Path to the GAM configuration directory
-export GAMCFGDIR="$HOME/GAMConfig"
-
 # Check for required arguments (should be exactly 2)
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 user@mycompany.com manager@mycompany.com"
@@ -13,111 +7,160 @@ if [ "$#" -ne 2 ]; then
 fi
 
 # Assign arguments to variables
-USER_EMAIL=$1
-MANAGER_EMAIL=$2
+USER_EMAIL="$1"
+MANAGER_EMAIL="$2"
 ARCHIVE_LOCATION="offboarded-users"
 SUSPENDED_USER_EMAIL="suspended-$USER_EMAIL"
 
-# Function to retry group creation with exponential backoff
-retry_group_creation() {
-  local max_retries=5
-  local count=0
-  local delay=10
+# Full path to the GAM executable
+GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
 
-  until $GAM_CMD create group $USER_EMAIL; do
-    ((count++))
-    if [ "$count" -ge "$max_retries" ]; then
-      echo "Failed to create group $USER_EMAIL after $max_retries attempts."
-      revert_changes
+# Path to the GAM configuration directory
+export GAMCFGDIR="$HOME/GAMConfig"
+
+# Log file
+LOG_FILE="offboarding.log"
+
+# Function to log messages
+log() {
+  echo "$(date +'%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOG_FILE"
+}
+
+# Function to suspend the user account
+suspend_user() {
+  log "Suspending user account: $USER_EMAIL"
+  if ! $GAM_CMD update user $USER_EMAIL suspended on; then
+    log "Failed to suspend user account: $USER_EMAIL"
+    exit 1
+  fi
+  log "User account suspended successfully: $USER_EMAIL"
+}
+
+# Function to update the user's email address
+update_user_email() {
+  log "Updating user's email address: $USER_EMAIL -> $SUSPENDED_USER_EMAIL"
+  if ! $GAM_CMD update user $USER_EMAIL username $SUSPENDED_USER_EMAIL; then
+    log "Failed to update user's email address: $USER_EMAIL"
+    exit 1
+  fi
+  log "User's email address updated successfully: $USER_EMAIL -> $SUSPENDED_USER_EMAIL"
+}
+
+# Function to wait for a specified duration, check for aliases, and remove them if found
+wait_and_check_aliases() {
+  log "Waiting for aliases check and removal"
+  
+  # Countdown for the first sleep
+  for ((i=300; i>0; i=i-10)); do
+    echo "Checking for aliases in $i seconds"
+    log "Checking for aliases in $i seconds"
+    sleep 10
+  done
+
+  # Check if the original email is an alias for the updated email address
+  log "Checking for aliases"
+  alias_exists=$($GAM_CMD info user $SUSPENDED_USER_EMAIL | grep -c "Alias: $USER_EMAIL")
+  if [ "$alias_exists" -gt 0 ]; then
+    # Original email is an alias to the updated email address, remove it
+    log "Removing alias: $USER_EMAIL"
+    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL remove alias $USER_EMAIL; then
+      log "Failed to remove alias: $USER_EMAIL"
       exit 1
     fi
-    echo "Group creation failed due to duplicate address. Retrying in $delay seconds..."
-    sleep $delay
-    delay=$((delay * 2))
+    log "Alias removed successfully: $USER_EMAIL"
+  fi
+
+  # Countdown for the second sleep
+  for ((i=300; i>0; i=i-10)); do
+    echo "Waiting for next action in $i seconds"
+    log "Waiting for next action in $i seconds"
+    sleep 10
   done
 }
 
-# Function to revert changes and unsuspend the user
+# Function to create a group with the original user email
+create_group() {
+  log "Creating group: $USER_EMAIL"
+  if ! $GAM_CMD create group "$USER_EMAIL"; then
+    log "Failed to create group: $USER_EMAIL"
+    revert_changes
+    exit 1
+  fi
+  log "Group created successfully: $USER_EMAIL"
+}
+
+# Function to add the manager as the owner of the group
+add_manager_as_owner() {
+  log "Adding manager as owner of the group: $MANAGER_EMAIL"
+  if ! $GAM_CMD update group "$USER_EMAIL" add owner "$MANAGER_EMAIL"; then
+    log "Failed to add manager as owner of the group: $MANAGER_EMAIL"
+    revert_changes
+    exit 1
+  fi
+  log "Manager added as owner of the group: $MANAGER_EMAIL"
+}
+
+# Function to export user's email messages to a folder on their Drive
+export_email_to_drive() {
+  log "Exporting user's email messages to Drive: $SUSPENDED_USER_EMAIL"
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL export todrive tofolder "$ARCHIVE_LOCATION/$USER_EMAIL"; then
+    log "Failed to export email messages to Drive: $SUSPENDED_USER_EMAIL"
+    exit 1
+  fi
+  log "Email messages exported to Drive successfully: $SUSPENDED_USER_EMAIL"
+}
+
+# Function to transfer drive data to the manager
+transfer_drive_data() {
+  log "Transferring Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+  if ! $GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL; then
+    log "Failed to transfer Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+    revert_changes
+    exit 1
+  fi
+  log "Drive data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+}
+
+# Function to transfer calendar data to the manager
+transfer_calendar_data() {
+  log "Transferring Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL; then
+    log "Failed to transfer Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+    revert_changes
+    exit 1
+  fi
+  log "Calendar data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
+}
+
+# Main function to execute the offboarding process
+offboard_user() {
+  suspend_user
+  update_user_email
+  wait_and_check_aliases
+  create_group
+  add_manager_as_owner
+  export_email_to_drive
+  transfer_drive_data
+  transfer_calendar_data
+}
+
+# Function to revert changes if needed
 revert_changes() {
-  echo "Reverting changes for $USER_EMAIL..."
-  $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL
-  $GAM_CMD update user $USER_EMAIL suspended off
+  log "Reverting changes"
+  # Update user email back to original
+  if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
+    log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+  else
+    log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+  fi
+
+  # Unsuspend user
+  if ! $GAM_CMD update user $USER_EMAIL suspended off; then
+    log "Failed to unsuspend user account: $USER_EMAIL"
+    exit 1
+  fi
+  log "User account unsuspended successfully: $USER_EMAIL"
 }
 
-# Function to check if a user exists
-check_user_exists() {
-  $GAM_CMD info user $1 >/dev/null 2>&1
-  return $?
-}
-
-# Function to remove all aliases from the user after a delay
-remove_all_aliases_after_delay() {
-  local delay=180
-  echo "Waiting $delay seconds before removing aliases..."
-  sleep $delay
-  aliases=$($GAM_CMD info user $USER_EMAIL | grep 'Alias:' | awk '{print $2}')
-  for alias in $aliases; do
-    $GAM_CMD delete alias $alias
-  done
-}
-
-# Check if the user and manager emails are valid
-if ! check_user_exists $USER_EMAIL; then
-  echo "Error: User $USER_EMAIL does not exist."
-  exit 1
-fi
-
-if ! check_user_exists $MANAGER_EMAIL; then
-  echo "Error: Manager $MANAGER_EMAIL does not exist."
-  exit 1
-fi
-
-# 1. Suspend the user account
-$GAM_CMD update user $USER_EMAIL suspended on
-
-# 2. Rename the account
-$GAM_CMD update user $USER_EMAIL username $SUSPENDED_USER_EMAIL
-
-# 3. Wait 180 seconds before removing aliases
-remove_all_aliases_after_delay
-
-# 4. Remove the alias if it still exists
-alias_exists=$($GAM_CMD info user $USER_EMAIL | grep "Alias: $USER_EMAIL" | wc -l)
-if [ "$alias_exists" -gt 0 ]; then
-  echo "Removing alias $USER_EMAIL..."
-  $GAM_CMD delete alias $USER_EMAIL
-fi
-
-# 5. Create a new group for the old email with the manager as the only member
-retry_group_creation
-$GAM_CMD update group $USER_EMAIL add member $MANAGER_EMAIL
-
-# 6. Transfer Drive data to the manager
-$GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL
-
-# 7. Transfer Calendar data to the manager
-$GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL
-
-# 8. Archive the user's email to the manager's Drive
-# Google Vault Export process (assuming you have a tool or API access set up for Google Vault)
-
-# Create a folder on the manager's Drive for the email archive
-ARCHIVE_FOLDER_ID=$($GAM_CMD user $MANAGER_EMAIL create drivefile targetfolder $ARCHIVE_LOCATION | grep 'id:' | awk '{print $2}')
-
-# Check if the updated email address is available
-retry_email_check() {
-  local retries=5
-  local count=0
-  local delay=10
-
-  until $GAM_CMD info user $SUSPENDED_USER_EMAIL >/dev/null 2>&1; do
-    ((count++))
-    if [ "$count" -ge "$retries" ]; then
-      echo "Email address $SUSPENDED_USER_EMAIL is not available after $retries attempts."
-      revert_changes
-      exit 1
-    fi
-    echo "Retrying email check in $delay seconds..."
-    sleep $delay
-  done
-}
+# Call the main function to execute the offboarding process
+offboard_user
