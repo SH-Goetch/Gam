@@ -50,6 +50,17 @@ check_user_exists() {
   return $?
 }
 
+# Function to remove all aliases from the user after a delay
+remove_all_aliases_after_delay() {
+  local delay=70
+  echo "Waiting $delay seconds before removing aliases..."
+  sleep $delay
+  aliases=$($GAM_CMD info user $USER_EMAIL | grep 'Alias:' | awk '{print $2}')
+  for alias in $aliases; do
+    $GAM_CMD delete alias $alias
+  done
+}
+
 # Check if the user and manager emails are valid
 if ! check_user_exists $USER_EMAIL; then
   echo "Error: User $USER_EMAIL does not exist."
@@ -67,17 +78,20 @@ $GAM_CMD update user $USER_EMAIL suspended on
 # 2. Rename the account
 $GAM_CMD update user $USER_EMAIL username $SUSPENDED_USER_EMAIL
 
-# 3. Create a new group for the old email with the manager as the only member
+# 3. Wait for a delay before removing aliases
+remove_all_aliases_after_delay &
+
+# 4. Create a new group for the old email with the manager as the only member
 retry_group_creation
 $GAM_CMD update group $USER_EMAIL add member $MANAGER_EMAIL
 
-# 4. Transfer Drive data to the manager
+# 5. Transfer Drive data to the manager
 $GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL
 
-# 5. Transfer Calendar data to the manager
+# 6. Transfer Calendar data to the manager
 $GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL
 
-# 6. Archive the user's email to the manager's Drive
+# 7. Archive the user's email to the manager's Drive
 # Google Vault Export process (assuming you have a tool or API access set up for Google Vault)
 
 # Create a folder on the manager's Drive for the email archive
