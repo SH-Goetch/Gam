@@ -78,6 +78,43 @@ transfer_aliases_to_manager() {
   done
 }
 
+# Function to wait
+wait_with_count() {
+  log "Starting 11-minute countdown"
+  
+  # Countdown for 11 minutes (660 seconds)
+  for ((i=660; i>0; i=i-60)); do
+    echo "Waiting for $((i / 60)) more minutes"
+    log "Waiting for $((i / 60)) more minutes"
+    sleep 60
+  done
+  
+  log "11-minute wait completed"
+}
+
+short_wait_with_count() {
+  log "Starting 11-minute countdown"
+  
+  # Countdown for 11 minutes (660 seconds)
+  for ((i=60; i>0; i=i-60)); do
+    echo "Waiting for $((i / 60)) more minutes"
+    log "Waiting for $((i / 60)) more minutes"
+    sleep 10
+  done
+  
+  log "11-minute wait completed"
+}
+
+# Function to remove all aliases
+remove_all_aliases() {
+  log "Removing all aliases for: $SUSPENDED_USER_EMAIL"
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL delete aliases; then
+    log "Failed to remove aliases for: $SUSPENDED_USER_EMAIL"
+    exit 1
+  fi
+  log "All aliases removed successfully for: $SUSPENDED_USER_EMAIL"
+}
+
 # Function to create a group with the original user email
 create_group() {
   log "Creating group: $USER_EMAIL"
@@ -134,9 +171,12 @@ transfer_calendar_data() {
 
 # Main function to execute the offboarding process
 offboard_user() {
+  transfer_aliases_to_manager
   suspend_user
   update_user_email
-  transfer_aliases_to_manager
+  wait_with_count
+  remove_all_aliases
+  wait_with_count
   create_group
   add_manager_as_owner
   export_email_to_drive
