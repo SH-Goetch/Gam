@@ -46,35 +46,35 @@ update_user_email() {
   log "User's email address updated successfully: $USER_EMAIL -> $SUSPENDED_USER_EMAIL"
 }
 
-# Function to wait for a specified duration, check for aliases, and remove them if found
-wait_and_check_aliases() {
-  log "Waiting for aliases check and removal"
+# Function to transfer all aliases from user to manager
+transfer_aliases_to_manager() {
+  log "Starting alias transfer process from $SUSPENDED_USER_EMAIL to $MANAGER_EMAIL"
   
-  # Countdown for the first sleep
-  for ((i=300; i>0; i=i-10)); do
-    echo "Checking for aliases in $i seconds"
-    log "Checking for aliases in $i seconds"
-    sleep 10
-  done
-
-  # Check if the original email is an alias for the updated email address
-  log "Checking for aliases"
-  alias_exists=$($GAM_CMD info user $SUSPENDED_USER_EMAIL | grep -c "Alias: $USER_EMAIL")
-  if [ "$alias_exists" -gt 0 ]; then
-    # Original email is an alias to the updated email address, remove it
-    log "Removing alias: $USER_EMAIL"
-    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL remove alias $USER_EMAIL; then
-      log "Failed to remove alias: $USER_EMAIL"
-      exit 1
-    fi
-    log "Alias removed successfully: $USER_EMAIL"
+  # Retrieve aliases from the suspended user
+  aliases=$($GAM_CMD info user $SUSPENDED_USER_EMAIL | grep 'Alias:' | awk '{print $2}')
+  
+  if [ -z "$aliases" ]; then
+    log "No aliases found for $SUSPENDED_USER_EMAIL"
+    return
   fi
 
-  # Countdown for the second sleep
-  for ((i=300; i>0; i=i-10)); do
-    echo "Waiting for next action in $i seconds"
-    log "Waiting for next action in $i seconds"
-    sleep 10
+  log "Found aliases: $aliases"
+
+  # Add each alias to the manager and remove it from the suspended user
+  for alias in $aliases; do
+    log "Adding alias $alias to $MANAGER_EMAIL"
+    if ! $GAM_CMD update user $MANAGER_EMAIL add alias $alias; then
+      log "Failed to add alias $alias to $MANAGER_EMAIL"
+      exit 1
+    fi
+
+    log "Removing alias $alias from $SUSPENDED_USER_EMAIL"
+    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL remove alias $alias; then
+      log "Failed to remove alias $alias from $SUSPENDED_USER_EMAIL"
+      exit 1
+    fi
+
+    log "Alias $alias transferred from $SUSPENDED_USER_EMAIL to $MANAGER_EMAIL successfully"
   done
 }
 
@@ -136,7 +136,7 @@ transfer_calendar_data() {
 offboard_user() {
   suspend_user
   update_user_email
-  wait_and_check_aliases
+  transfer_aliases_to_manager
   create_group
   add_manager_as_owner
   export_email_to_drive
