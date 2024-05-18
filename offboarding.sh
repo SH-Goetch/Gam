@@ -12,7 +12,7 @@ USER_EMAIL=$1
 MANAGER_EMAIL=$2
 ARCHIVE_LOCATION="offboarded-users"
 SUSPENDED_USER_EMAIL="suspended-$USER_EMAIL"
-NOTIFICATION_EMAIL="gstone@saybrookhome.com"
+NOTIFICATION_EMAIL=""
 
 # Function to send failure email using GAM
 send_failure_email() {
