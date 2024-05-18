@@ -6,7 +6,7 @@ GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
 # Path to the GAM configuration directory
 export GAMCFGDIR="$HOME/GAMConfig"
 
-# Check for required arguments
+# Check for required arguments (should be exactly 2)
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 user@mycompany.com manager@mycompany.com"
   exit 1
@@ -33,7 +33,7 @@ retry_group_creation() {
     fi
     echo "Group creation failed due to duplicate address. Retrying in $delay seconds..."
     sleep $delay
-    delay=$((delay * 2)) # Exponential backoff
+    delay=$((delay * 2))
   done
 }
 
@@ -52,7 +52,7 @@ check_user_exists() {
 
 # Function to remove all aliases from the user after a delay
 remove_all_aliases_after_delay() {
-  local delay=70
+  local delay=180
   echo "Waiting $delay seconds before removing aliases..."
   sleep $delay
   aliases=$($GAM_CMD info user $USER_EMAIL | grep 'Alias:' | awk '{print $2}')
@@ -78,20 +78,27 @@ $GAM_CMD update user $USER_EMAIL suspended on
 # 2. Rename the account
 $GAM_CMD update user $USER_EMAIL username $SUSPENDED_USER_EMAIL
 
-# 3. Wait for a delay before removing aliases
-remove_all_aliases_after_delay &
+# 3. Wait 180 seconds before removing aliases
+remove_all_aliases_after_delay
 
-# 4. Create a new group for the old email with the manager as the only member
+# 4. Remove the alias if it still exists
+alias_exists=$($GAM_CMD info user $USER_EMAIL | grep "Alias: $USER_EMAIL" | wc -l)
+if [ "$alias_exists" -gt 0 ]; then
+  echo "Removing alias $USER_EMAIL..."
+  $GAM_CMD delete alias $USER_EMAIL
+fi
+
+# 5. Create a new group for the old email with the manager as the only member
 retry_group_creation
 $GAM_CMD update group $USER_EMAIL add member $MANAGER_EMAIL
 
-# 5. Transfer Drive data to the manager
+# 6. Transfer Drive data to the manager
 $GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL
 
-# 6. Transfer Calendar data to the manager
+# 7. Transfer Calendar data to the manager
 $GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL
 
-# 7. Archive the user's email to the manager's Drive
+# 8. Archive the user's email to the manager's Drive
 # Google Vault Export process (assuming you have a tool or API access set up for Google Vault)
 
 # Create a folder on the manager's Drive for the email archive
@@ -114,42 +121,3 @@ retry_email_check() {
     sleep $delay
   done
 }
-
-retry_email_check
-
-# Create a Google Vault export job for the user
-VAULT_EXPORT_NAME="export-$USER_EMAIL-$(date +%Y%m%d%H%M%S)"
-VAULT_MATTER_ID=$($GAM_CMD create matter name "$VAULT_EXPORT_NAME" description "Email export for $USER_EMAIL" | grep 'matterId:' | awk '{print $2}')
-VAULT_EXPORT_ID=$($GAM_CMD create export matter $VAULT_MATTER_ID name "$VAULT_EXPORT_NAME" query from:$SUSPENDED_USER_EMAIL to:$SUSPENDED_USER_EMAIL corpus mail dataScope allTime | grep 'exportId:' | awk '{print $2}')
-
-# Poll the export status
-while true; do
-  EXPORT_STATUS=$($GAM_CMD info export $VAULT_EXPORT_ID matter $VAULT_MATTER_ID | grep 'status:' | awk '{print $2}')
-  if [ "$EXPORT_STATUS" == "COMPLETED" ]; then
-    echo "Export completed successfully."
-    break
-  elif [ "$EXPORT_STATUS" == "FAILED" ]; then
-    echo "Export failed."
-    revert_changes
-    exit 1
-  else
-    echo "Export status: $EXPORT_STATUS. Checking again in 60 seconds."
-    sleep 60
-  fi
-done
-
-# Download the export to a local directory
-EXPORT_DIRECTORY="/tmp/$VAULT_EXPORT_NAME"
-mkdir -p $EXPORT_DIRECTORY
-$GAM_CMD download export $VAULT_EXPORT_ID matter $VAULT_MATTER_ID exportpath $EXPORT_DIRECTORY
-
-# Upload the export to the manager's Drive
-$GAM_CMD user $MANAGER_EMAIL add drivefile localpath $EXPORT_DIRECTORY parentid $ARCHIVE_FOLDER_ID
-
-# Clean up local export files
-rm -rf $EXPORT_DIRECTORY
-
-# 7. Delete the user's account only if the export was successful
-$GAM_CMD delete user $SUSPENDED_USER_EMAIL
-
-echo "Offboarding process for $USER_EMAIL completed successfully."
