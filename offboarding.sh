@@ -194,20 +194,31 @@ offboard_user() {
 revert_changes() {
   log "Reverting changes"
 
+  # Remove manager as owner of the group
+  log "Removing manager as owner of the group: $MANAGER_EMAIL"
+  if ! $GAM_CMD update group "$USER_EMAIL" remove owner "$MANAGER_EMAIL"; then
+    log "Failed to remove manager as owner of the group: $MANAGER_EMAIL"
+  else
+    log "Manager removed as owner of the group: $MANAGER_EMAIL"
+  fi
+
+  # Delete the group
+  log "Deleting group: $USER_EMAIL"
+  if ! $GAM_CMD delete group "$USER_EMAIL"; then
+    log "Failed to delete group: $USER_EMAIL"
+  else
+    log "Group deleted successfully: $USER_EMAIL"
+  fi
+
+  # Short wait to ensure email address is free
+  short_wait_with_count
+
   # Update user email back to original
   log "Updating user's email address back to original: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
   if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
     log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
   else
     log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
-  fi
-
-  # Remove the group created
-  log "Deleting group: $USER_EMAIL"
-  if ! $GAM_CMD delete group "$USER_EMAIL"; then
-    log "Failed to delete group: $USER_EMAIL"
-  else
-    log "Group deleted successfully: $USER_EMAIL"
   fi
 
   # Unsuspend user
