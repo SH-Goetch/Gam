@@ -89,14 +89,14 @@ wait_with_count() {
 short_wait_with_count() {
   log "Starting 1-minute countdown"
   
-  # Countdown for 11 minutes (660 seconds)
-  for ((i=60; i>0; i=i-60)); do
-    echo "Waiting for $((i / 60)) more minutes"
-    log "Waiting for $((i / 60)) more minutes"
+  # Countdown for 1 minute (60 seconds)
+  for ((i=60; i>0; i=i-10)); do
+    echo "Waiting for $((i / 10)) more seconds"
+    log "Waiting for $((i / 10)) more seconds"
     sleep 10
   done
   
-  log "11-minute wait completed"
+  log "1-minute wait completed"
 }
 
 # Function to remove all aliases
@@ -163,38 +163,74 @@ transfer_calendar_data() {
   log "Calendar data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
 }
 
+# Function to delete the suspended account
+delete_suspended_account() {
+  log "Deleting suspended account: $SUSPENDED_USER_EMAIL"
+  if ! $GAM_CMD delete user $SUSPENDED_USER_EMAIL; then
+    log "Failed to delete suspended account: $SUSPENDED_USER_EMAIL"
+    exit 1
+  fi
+  log "Suspended account deleted successfully: $SUSPENDED_USER_EMAIL"
+}
+
 # Main function to execute the offboarding process
 offboard_user() {
-  transfer_aliases_to_manager
-  suspend_user
-  update_user_email
-  wait_with_count
-  remove_all_aliases
-  wait_with_count
-  create_group 
-  add_manager_as_owner
-  export_email_to_drive
-  transfer_drive_data
-  transfer_calendar_data
+  transfer_aliases_to_manager || { revert_changes; exit 1; }
+  suspend_user || { revert_changes; exit 1; }
+  update_user_email || { revert_changes; exit 1; }
+  wait_with_count || { revert_changes; exit 1; }
+  remove_all_aliases || { revert_changes; exit 1; }
+  wait_with_count || { revert_changes; exit 1; }
+  create_group || { revert_changes; exit 1; }
+  add_manager_as_owner || { revert_changes; exit 1; }
+  short_wait_with_count || { revert_changes; exit 1; }
+  export_email_to_drive || { revert_changes; exit 1; }
+  transfer_drive_data || { revert_changes; exit 1; }
+  transfer_calendar_data || { revert_changes; exit 1; }
+  delete_suspended_account || { revert_changes; exit 1; }
 }
 
 # Function to revert changes if needed
 revert_changes() {
   log "Reverting changes"
-  # Update user email back to original
-  if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
-    log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+
+  # Check if the user's email address was updated
+  if [ "$USER_EMAIL" != "$SUSPENDED_USER_EMAIL" ]; then
+    log "Updating user's email address back to original: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
+      log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+    else
+      log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+    fi
+  fi
+
+  # Check if aliases were removed
+  if [ ! -z "$aliases" ]; then
+    log "Removing all aliases for: $SUSPENDED_USER_EMAIL"
+    if ! $GAM_CMD user $SUSPENDED_USER_EMAIL delete aliases; then
+      log "Failed to remove aliases for: $SUSPENDED_USER_EMAIL"
+    else
+      log "All aliases removed successfully for: $SUSPENDED_USER_EMAIL"
+    fi
+  fi
+
+  # Check if a group was created and delete it
+  log "Deleting group: $USER_EMAIL"
+  if ! $GAM_CMD delete group "$USER_EMAIL"; then
+    log "Failed to delete group: $USER_EMAIL"
   else
-    log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+    log "Group deleted successfully: $USER_EMAIL"
   fi
 
-  # Unsuspend user
-  if ! $GAM_CMD update user $USER_EMAIL suspended off; then
-    log "Failed to unsuspend user account: $USER_EMAIL"
-    exit 1
+  # Check if the user was suspended
+  if $GAM_CMD info user $USER_EMAIL suspended | grep -q "Suspended: True"; then
+    log "Unsuspending user account: $USER_EMAIL"
+    if ! $GAM_CMD update user $USER_EMAIL suspended off; then
+      log "Failed to unsuspend user account: $USER_EMAIL"
+    else
+      log "User account unsuspended successfully: $USER_EMAIL"
+    fi
   fi
-  log "User account unsuspended successfully: $USER_EMAIL"
 }
-
 # Call the main function to execute the offboarding process
 offboard_user
