@@ -1,11 +1,23 @@
 #!/bin/bash
 
-# Define variables
+# Check if the required arguments are provided
+if [ "$#" -ne 5 ]; then
+    echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE"
+    exit 1
+fi
+
+# Assign command-line arguments to variables
+FIRST_NAME="$1"
+LAST_NAME="$2"
+EMAIL="$3"
+TEMP_PASSWORD="$4"
+EMPLOYEE_TITLE="$5"
+
+# Define the remaining variables
 BUSINESS_NAME="Your Business Name"
 LOGO_SRC="your_logo_source_url"
-EMPLOYEE_NAME="Employee Name"
-EMPLOYEE_EMAIL="employee@example.com"
-EMPLOYEE_TITLE="Employee Title"
+EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
+EMPLOYEE_EMAIL="$EMAIL"
 STORE_ADDRESS="1234 Business St, City, State ZIP"
 STORE_PHONE="123-456-7890"
 FACEBOOK_URL="https://www.facebook.com/yourpage"
@@ -16,6 +28,15 @@ PINTEREST_URL="https://www.pinterest.com/yourpage"
 PINTEREST_IMG_SRC="your_pinterest_image_source_url"
 YOUTUBE_URL="https://www.youtube.com/yourchannel"
 YOUTUBE_IMG_SRC="your_youtube_image_source_url"
+
+# Create user using GAM
+gam create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
+
+# Check if user creation was successful
+if [ $? -ne 0 ]; then
+  echo "Failed to create user $EMAIL"
+  exit 1
+fi
 
 # Create the HTML content
 HTML_CONTENT="<html>
@@ -156,4 +177,8 @@ HTML_CONTENT="<html>
 </html>"
 
 # Save the content to an HTML file
-echo "$HTML_CONTENT" > signature.html
+SIGNATURE_FILE="${EMPLOYEE_NAME// /_}_signature.html"
+echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
+
+# Notify user of success
+echo "User $EMAIL created and signature file generated at $SIGNATURE_FILE."
