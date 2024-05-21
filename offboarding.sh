@@ -48,13 +48,13 @@ update_user_email() {
 
 # Function to transfer all aliases from user to manager
 transfer_aliases_to_manager() {
-  log "Starting alias transfer process from $SUSPENDED_USER_EMAIL to $MANAGER_EMAIL"
+  log "Starting alias transfer process from $USER_EMAIL to $MANAGER_EMAIL"
   
   # Retrieve aliases from the suspended user
-  aliases=$($GAM_CMD info user $SUSPENDED_USER_EMAIL | grep 'Alias:' | awk '{print $2}')
+  aliases=$($GAM_CMD print aliases select user $USER_EMAIL | tail -n +2 | cut -d, -f1)
   
   if [ -z "$aliases" ]; then
-    log "No aliases found for $SUSPENDED_USER_EMAIL"
+    log "No aliases found for $USER_EMAIL"
     return
   fi
 
@@ -68,13 +68,13 @@ transfer_aliases_to_manager() {
       exit 1
     fi
 
-    log "Removing alias $alias from $SUSPENDED_USER_EMAIL"
-    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL remove alias $alias; then
-      log "Failed to remove alias $alias from $SUSPENDED_USER_EMAIL"
+    log "Removing alias $alias from $USER_EMAIL"
+    if ! $GAM_CMD update user $USER_EMAIL remove alias $alias; then
+      log "Failed to remove alias $alias from $USER_EMAIL"
       exit 1
     fi
 
-    log "Alias $alias transferred from $SUSPENDED_USER_EMAIL to $MANAGER_EMAIL successfully"
+    log "Alias $alias transferred from $USER_EMAIL to $MANAGER_EMAIL successfully"
   done
 }
 
@@ -93,7 +93,7 @@ wait_with_count() {
 }
 
 short_wait_with_count() {
-  log "Starting 11-minute countdown"
+  log "Starting 1-minute countdown"
   
   # Countdown for 11 minutes (660 seconds)
   for ((i=60; i>0; i=i-60)); do
@@ -139,12 +139,12 @@ add_manager_as_owner() {
 
 # Function to export user's email messages to a folder on their Drive
 export_email_to_drive() {
-  log "Exporting user's email messages to Drive: $SUSPENDED_USER_EMAIL"
-  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL export todrive tofolder "$ARCHIVE_LOCATION/$USER_EMAIL"; then
-    log "Failed to export email messages to Drive: $SUSPENDED_USER_EMAIL"
+  log "Archiving user's email messages to Drive: $SUSPENDED_USER_EMAIL"
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL matchlabel $USER_EMAIL doit ; then
+    log "Failed to archive email messages: $SUSPENDED_USER_EMAIL"
     exit 1
   fi
-  log "Email messages exported to Drive successfully: $SUSPENDED_USER_EMAIL"
+  log "Email messages archived to successfully: $SUSPENDED_USER_EMAIL"
 }
 
 # Function to transfer drive data to the manager
