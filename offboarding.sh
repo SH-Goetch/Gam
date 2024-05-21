@@ -60,17 +60,11 @@ transfer_aliases_to_manager() {
 
   log "Found aliases: $aliases"
 
-  # Add each alias to the manager and remove it from the suspended user
+  # Add each alias to the manager
   for alias in $aliases; do
-    log "Adding alias $alias to $MANAGER_EMAIL"
-    if ! $GAM_CMD update user $MANAGER_EMAIL add alias $alias; then
-      log "Failed to add alias $alias to $MANAGER_EMAIL"
-      exit 1
-    fi
-
-    log "Removing alias $alias from $USER_EMAIL"
-    if ! $GAM_CMD update user $USER_EMAIL remove alias $alias; then
-      log "Failed to remove alias $alias from $USER_EMAIL"
+    log "Transferring alias $alias to $MANAGER_EMAIL"
+    if ! $GAM_CMD update alias $alias $MANAGER_EMAIL; then
+      log "Failed to transfer alias $alias to $MANAGER_EMAIL"
       exit 1
     fi
 
