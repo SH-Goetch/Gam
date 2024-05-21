@@ -6,6 +6,12 @@ if [ "$#" -ne 6 ]; then
     exit 1
 fi
 
+# Full path to the GAM executable
+GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
+
+# Path to the GAM configuration directory
+export GAMCFGDIR="$HOME/GAMConfig"
+
 # Assign command-line arguments to variables
 FIRST_NAME="$1"
 LAST_NAME="$2"
@@ -15,22 +21,22 @@ EMPLOYEE_TITLE="$5"
 PHONE_NUMBER="$6"
 
 # Define the remaining variables
-BUSINESS_NAME="Your Business Name"
-LOGO_SRC="your_logo_source_url"
+BUSINESS_NAME="Saybrook Home"
+LOGO_SRC="Https://saybrookbarn.com/sh.png"
 EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
-STORE_ADDRESS="1234 Business St, City, State ZIP"
-FACEBOOK_URL="https://www.facebook.com/yourpage"
-FACEBOOK_IMG_SRC="your_facebook_image_source_url"
-INSTAGRAM_URL="https://www.instagram.com/yourpage"
-INSTAGRAM_IMG_SRC="your_instagram_image_source_url"
-PINTEREST_URL="https://www.pinterest.com/yourpage"
-PINTEREST_IMG_SRC="your_pinterest_image_source_url"
-YOUTUBE_URL="https://www.youtube.com/yourchannel"
-YOUTUBE_IMG_SRC="your_youtube_image_source_url"
+STORE_ADDRESS="2 Main St Old Saybrook, CT 06475 | 400 Hebron Ave Glastonbury, CT 06033"
+FACEBOOK_URL="https://www.facebook.com/saybrookhome"
+FACEBOOK_IMG_SRC="https://saybrookbarn.com/fb.png"
+INSTAGRAM_URL="https://www.instagram.com/saybrookhome"
+INSTAGRAM_IMG_SRC="Https://saybrookbarn.com/ig.png"
+PINTEREST_URL="https://www.pinterest.com/SaybrookHome"
+PINTEREST_IMG_SRC="https://saybrookbarn.com/pt.png"
+YOUTUBE_URL="https://www.youtube.com/Saybrookcountry1/featured"
+YOUTUBE_IMG_SRC="https://saybrookbarn.com/yt.png"
 
 # Create user using GAM
-gam create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
+$GAM_CMD create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
 
 # Check if user creation was successful
 if [ $? -ne 0 ]; then
@@ -180,8 +186,8 @@ HTML_CONTENT="<html>
 SIGNATURE_FILE="${EMPLOYEE_NAME// /_}.html"
 echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
 
-# Update user's signature with GAM
-gam user $EMAIL update signature file "$SIGNATURE_FILE"
+# Update user's signature with gam
+$GAM_CMD user $EMAIL signature file "$SIGNATURE_FILE"
 
 # Check if signature update was successful
 if [ $? -ne 0 ]; then
