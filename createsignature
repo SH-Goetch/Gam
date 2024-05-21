@@ -14,6 +14,8 @@ INSTAGRAM_URL="https://www.instagram.com/yourpage"
 INSTAGRAM_IMG_SRC="your_instagram_image_source_url"
 PINTEREST_URL="https://www.pinterest.com/yourpage"
 PINTEREST_IMG_SRC="your_pinterest_image_source_url"
+YOUTUBE_URL="https://www.youtube.com/yourchannel"
+YOUTUBE_IMG_SRC="your_youtube_image_source_url"
 
 # Create the HTML content
 HTML_CONTENT="<html>
@@ -142,6 +144,7 @@ HTML_CONTENT="<html>
 						</h3>
 						<a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
 						<a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+						<a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
 						<a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
 					</td>
 				</tr>
