@@ -63,7 +63,7 @@ transfer_aliases_to_manager() {
   # Add each alias to the manager
   for alias in $aliases; do
     log "Transferring alias $alias to $MANAGER_EMAIL"
-    if ! $GAM_CMD update alias $alias $MANAGER_EMAIL; then
+    if ! $GAM_CMD update alias $alias user $MANAGER_EMAIL; then
       log "Failed to transfer alias $alias to $MANAGER_EMAIL"
       exit 1
     fi
