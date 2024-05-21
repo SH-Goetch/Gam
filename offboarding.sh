@@ -134,11 +134,11 @@ add_manager_as_owner() {
 # Function to archive user's email messages to group
 export_email_to_drive() {
   log "Archiving user's email messages to Drive: $SUSPENDED_USER_EMAIL"
-  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL doit ; then
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL doit; then
     log "Failed to archive email messages: $SUSPENDED_USER_EMAIL"
     exit 1
   fi
-  log "Email messages archived to successfully: $SUSPENDED_USER_EMAIL"
+  log "Email messages archived successfully: $SUSPENDED_USER_EMAIL"
 }
 
 # Function to transfer drive data to the manager
@@ -146,10 +146,10 @@ transfer_drive_data() {
   log "Transferring Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   if ! $GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL; then
     log "Failed to transfer Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
-    revert_changes
-    exit 1
+    # Do not exit, continue to next step
+  else
+    log "Drive data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   fi
-  log "Drive data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
 }
 
 # Function to transfer calendar data to the manager
@@ -157,10 +157,10 @@ transfer_calendar_data() {
   log "Transferring Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   if ! $GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL; then
     log "Failed to transfer Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
-    revert_changes
-    exit 1
+    # Do not exit, continue to next step
+  else
+    log "Calendar data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   fi
-  log "Calendar data transferred to manager successfully: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
 }
 
 # Function to delete the suspended account
@@ -185,8 +185,8 @@ offboard_user() {
   add_manager_as_owner || { revert_changes; exit 1; }
   short_wait_with_count || { revert_changes; exit 1; }
   export_email_to_drive || { revert_changes; exit 1; }
-  transfer_drive_data || { revert_changes; exit 1; }
-  transfer_calendar_data || { revert_changes; exit 1; }
+  transfer_drive_data
+  transfer_calendar_data
   delete_suspended_account || { revert_changes; exit 1; }
 }
 
@@ -194,27 +194,15 @@ offboard_user() {
 revert_changes() {
   log "Reverting changes"
 
-  # Check if the user's email address was updated
-  if [ "$USER_EMAIL" != "$SUSPENDED_USER_EMAIL" ]; then
-    log "Updating user's email address back to original: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
-    if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
-      log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
-    else
-      log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
-    fi
+  # Update user email back to original
+  log "Updating user's email address back to original: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+  if ! $GAM_CMD update user $SUSPENDED_USER_EMAIL username $USER_EMAIL; then
+    log "Failed to revert user's email address: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
+  else
+    log "User's email address reverted successfully: $SUSPENDED_USER_EMAIL -> $USER_EMAIL"
   fi
 
-  # Check if aliases were removed
-  if [ ! -z "$aliases" ]; then
-    log "Removing all aliases for: $SUSPENDED_USER_EMAIL"
-    if ! $GAM_CMD user $SUSPENDED_USER_EMAIL delete aliases; then
-      log "Failed to remove aliases for: $SUSPENDED_USER_EMAIL"
-    else
-      log "All aliases removed successfully for: $SUSPENDED_USER_EMAIL"
-    fi
-  fi
-
-  # Check if a group was created and delete it
+  # Remove the group created
   log "Deleting group: $USER_EMAIL"
   if ! $GAM_CMD delete group "$USER_EMAIL"; then
     log "Failed to delete group: $USER_EMAIL"
@@ -222,15 +210,14 @@ revert_changes() {
     log "Group deleted successfully: $USER_EMAIL"
   fi
 
-  # Check if the user was suspended
-  if $GAM_CMD info user $USER_EMAIL suspended | grep -q "Suspended: True"; then
-    log "Unsuspending user account: $USER_EMAIL"
-    if ! $GAM_CMD update user $USER_EMAIL suspended off; then
-      log "Failed to unsuspend user account: $USER_EMAIL"
-    else
-      log "User account unsuspended successfully: $USER_EMAIL"
-    fi
+  # Unsuspend user
+  log "Unsuspending user account: $USER_EMAIL"
+  if ! $GAM_CMD update user $USER_EMAIL suspended off; then
+    log "Failed to unsuspend user account: $USER_EMAIL"
+  else
+    log "User account unsuspended successfully: $USER_EMAIL"
   fi
 }
+
 # Call the main function to execute the offboarding process
 offboard_user
