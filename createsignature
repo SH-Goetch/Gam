@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Check if the required arguments are provided
-if [ "$#" -ne 5 ]; then
-    echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE"
+if [ "$#" -ne 6 ]; then
+    echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER"
     exit 1
 fi
 
@@ -12,6 +12,7 @@ LAST_NAME="$2"
 EMAIL="$3"
 TEMP_PASSWORD="$4"
 EMPLOYEE_TITLE="$5"
+PHONE_NUMBER="$6"
 
 # Define the remaining variables
 BUSINESS_NAME="Your Business Name"
@@ -19,7 +20,6 @@ LOGO_SRC="your_logo_source_url"
 EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
 STORE_ADDRESS="1234 Business St, City, State ZIP"
-STORE_PHONE="123-456-7890"
 FACEBOOK_URL="https://www.facebook.com/yourpage"
 FACEBOOK_IMG_SRC="your_facebook_image_source_url"
 INSTAGRAM_URL="https://www.instagram.com/yourpage"
@@ -96,7 +96,7 @@ HTML_CONTENT="<html>
 																				<tbody>
 																					<tr>
 																						<td style=\"font-family:Georgia\">
-																							<a href=\"tel:$STORE_PHONE\" style=\"text-decoration:none\" target=\"_blank\"><span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$STORE_PHONE</span></a>
+																							<a href=\"tel:$PHONE_NUMBER\" style=\"text-decoration:none\" target=\"_blank\"><span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$PHONE_NUMBER</span></a>
 																						</td>
 																					</tr>
 																				</tbody>
@@ -177,8 +177,17 @@ HTML_CONTENT="<html>
 </html>"
 
 # Save the content to an HTML file
-SIGNATURE_FILE="${EMPLOYEE_NAME// /_}_signature.html"
+SIGNATURE_FILE="${EMPLOYEE_NAME// /_}.html"
 echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
 
+# Update user's signature with GAM
+gam user $EMAIL update signature file "$SIGNATURE_FILE"
+
+# Check if signature update was successful
+if [ $? -ne 0 ]; then
+  echo "Failed to update signature for user $EMAIL"
+  exit 1
+fi
+
 # Notify user of success
-echo "User $EMAIL created and signature file generated at $SIGNATURE_FILE."
+echo "User $EMAIL created and signature updated with HTML file $SIGNATURE_FILE."
