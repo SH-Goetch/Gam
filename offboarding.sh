@@ -131,10 +131,10 @@ add_manager_as_owner() {
   log "Manager added as owner of the group: $MANAGER_EMAIL"
 }
 
-# Function to export user's email messages to a folder on their Drive
+# Function to archive user's email messages to group
 export_email_to_drive() {
   log "Archiving user's email messages to Drive: $SUSPENDED_USER_EMAIL"
-  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL matchlabel $USER_EMAIL doit ; then
+  if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL doit ; then
     log "Failed to archive email messages: $SUSPENDED_USER_EMAIL"
     exit 1
   fi
@@ -171,7 +171,7 @@ offboard_user() {
   wait_with_count
   remove_all_aliases
   wait_with_count
-  create_group
+  create_group 
   add_manager_as_owner
   export_email_to_drive
   transfer_drive_data
