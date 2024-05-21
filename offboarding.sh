@@ -21,12 +21,12 @@ export GAMCFGDIR="$HOME/GAMConfig"
 # Log file
 LOG_FILE="offboarding.log"
 
-# Function to log messages
+# log messages
 log() {
   echo "$(date +'%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOG_FILE"
 }
 
-# Function to suspend the user account
+# Suspend the user account
 suspend_user() {
   log "Suspending user account: $USER_EMAIL"
   if ! $GAM_CMD update user $USER_EMAIL suspended on; then
@@ -36,7 +36,7 @@ suspend_user() {
   log "User account suspended successfully: $USER_EMAIL"
 }
 
-# Function to update the user's email address
+# Update the user's email address
 update_user_email() {
   log "Updating user's email address: $USER_EMAIL -> $SUSPENDED_USER_EMAIL"
   if ! $GAM_CMD update user $USER_EMAIL username $SUSPENDED_USER_EMAIL; then
@@ -46,7 +46,7 @@ update_user_email() {
   log "User's email address updated successfully: $USER_EMAIL -> $SUSPENDED_USER_EMAIL"
 }
 
-# Function to transfer all aliases from user to manager
+# Transfer all aliases from user to manager
 transfer_aliases_to_manager() {
   log "Starting alias transfer process from $USER_EMAIL to $MANAGER_EMAIL"
   
@@ -72,7 +72,7 @@ transfer_aliases_to_manager() {
   done
 }
 
-# Function to wait
+# 11 minute wait
 wait_with_count() {
   log "Starting 11-minute countdown"
   
@@ -99,7 +99,7 @@ short_wait_with_count() {
   log "1-minute wait completed"
 }
 
-# Function to remove all aliases
+# Remove all aliases
 remove_all_aliases() {
   log "Removing all aliases for: $SUSPENDED_USER_EMAIL"
   if ! $GAM_CMD user $SUSPENDED_USER_EMAIL delete aliases; then
@@ -109,7 +109,7 @@ remove_all_aliases() {
   log "All aliases removed successfully for: $SUSPENDED_USER_EMAIL"
 }
 
-# Function to create a group with the original user email
+# Create a group with the original user email
 create_group() {
   log "Creating group: $USER_EMAIL"
   if ! $GAM_CMD create group "$USER_EMAIL"; then
@@ -120,7 +120,7 @@ create_group() {
   log "Group created successfully: $USER_EMAIL"
 }
 
-# Function to add the manager as the owner of the group
+# Add the manager as the owner of the group
 add_manager_as_owner() {
   log "Adding manager as owner of the group: $MANAGER_EMAIL"
   if ! $GAM_CMD update group "$USER_EMAIL" add owner "$MANAGER_EMAIL"; then
@@ -131,7 +131,7 @@ add_manager_as_owner() {
   log "Manager added as owner of the group: $MANAGER_EMAIL"
 }
 
-# Function to archive user's email messages to group
+# Archive user's email messages to group
 export_email_to_drive() {
   log "Archiving user's email messages to Drive: $SUSPENDED_USER_EMAIL"
   if ! $GAM_CMD user $SUSPENDED_USER_EMAIL archive messages $USER_EMAIL doit; then
@@ -141,7 +141,7 @@ export_email_to_drive() {
   log "Email messages archived successfully: $SUSPENDED_USER_EMAIL"
 }
 
-# Function to transfer drive data to the manager
+# Transfer drive data to the manager
 transfer_drive_data() {
   log "Transferring Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   if ! $GAM_CMD create datatransfer $SUSPENDED_USER_EMAIL gdrive $MANAGER_EMAIL; then
@@ -152,7 +152,7 @@ transfer_drive_data() {
   fi
 }
 
-# Function to transfer calendar data to the manager
+# Transfer calendar data to the manager
 transfer_calendar_data() {
   log "Transferring Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
   if ! $GAM_CMD user $SUSPENDED_USER_EMAIL transfer calendars $MANAGER_EMAIL; then
@@ -163,7 +163,7 @@ transfer_calendar_data() {
   fi
 }
 
-# Function to delete the suspended account
+# Delete the suspended account
 delete_suspended_account() {
   log "Deleting suspended account: $SUSPENDED_USER_EMAIL"
   if ! $GAM_CMD delete user $SUSPENDED_USER_EMAIL; then
@@ -173,21 +173,21 @@ delete_suspended_account() {
   log "Suspended account deleted successfully: $SUSPENDED_USER_EMAIL"
 }
 
-# Main function to execute the offboarding process
+# offboarding process
 offboard_user() {
   transfer_aliases_to_manager || { revert_changes; exit 1; }
   suspend_user || { revert_changes; exit 1; }
   update_user_email || { revert_changes; exit 1; }
-  wait_with_count || { revert_changes; exit 1; }
+  wait_with_count
   remove_all_aliases || { revert_changes; exit 1; }
   wait_with_count || { revert_changes; exit 1; }
   create_group || { revert_changes; exit 1; }
   add_manager_as_owner || { revert_changes; exit 1; }
-  short_wait_with_count || { revert_changes; exit 1; }
-  export_email_to_drive || { revert_changes; exit 1; }
+  short_wait_with_count 
+  export_email_to_drive
   transfer_drive_data
   transfer_calendar_data
-  delete_suspended_account || { revert_changes; exit 1; }
+  delete_suspended_account
 }
 
 # Function to revert changes if needed
