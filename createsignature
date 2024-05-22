@@ -21,19 +21,19 @@ EMPLOYEE_TITLE="$5"
 PHONE_NUMBER="$6"
 
 # Define the remaining variables
-BUSINESS_NAME="Saybrook Home"
-LOGO_SRC="Https://saybrookbarn.com/sh.png"
+BUSINESS_NAME=""
+LOGO_SRC=""
 EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
-STORE_ADDRESS="2 Main St Old Saybrook, CT 06475 | 400 Hebron Ave Glastonbury, CT 06033"
-FACEBOOK_URL="https://www.facebook.com/saybrookhome"
-FACEBOOK_IMG_SRC="https://saybrookbarn.com/fb.png"
-INSTAGRAM_URL="https://www.instagram.com/saybrookhome"
-INSTAGRAM_IMG_SRC="Https://saybrookbarn.com/ig.png"
-PINTEREST_URL="https://www.pinterest.com/SaybrookHome"
-PINTEREST_IMG_SRC="https://saybrookbarn.com/pt.png"
-YOUTUBE_URL="https://www.youtube.com/Saybrookcountry1/featured"
-YOUTUBE_IMG_SRC="https://saybrookbarn.com/yt.png"
+STORE_ADDRESS=""
+FACEBOOK_URL=""
+FACEBOOK_IMG_SRC=""
+INSTAGRAM_URL=""
+INSTAGRAM_IMG_SRC=""
+PINTEREST_URL=""
+PINTEREST_IMG_SRC=""
+YOUTUBE_URL=""
+YOUTUBE_IMG_SRC=""
 
 # Create user using GAM
 $GAM_CMD create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
@@ -46,140 +46,148 @@ fi
 
 # Create the HTML content
 HTML_CONTENT="<html>
-<body>
-	<div>
-		<h5>Kind Regards</h5>
-	</div>
-	<div dir=\"ltr\">
-		<table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-			<tbody>
-				<tr>
-					<td style=\"vertical-align:middle\">
-						<table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-							<tbody>
-								<tr>
-									<td style=\"text-align:center\">
-										<a href=\"#\" target=\"_blank\"><img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\"></a>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</td>
-					<td width=\"15\"></td>
-					<td style=\"padding:0px;vertical-align:middle\">
-						<h3 color=\"#000000\" style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
-							<table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
-								<tbody>
-									<tr>
-										<td style=\"line-height:1.08\">
-											<span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span>
-											<span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE</span>
-											<span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">at $BUSINESS_NAME</span>
-										</td>
-									</tr>
-									<tr>
-										<td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
-											<table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
-												<tbody>
-													<tr>
-														<td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
-													</tr>
-												</tbody>
-											</table>
-										</td>
-									</tr>
-									<tr>
-										<td style=\"line-height:0\">
-											<table cellpadding=\"0\" cellspacing=\"0\">
-												<tbody>
-													<tr>
-														<td>
-															<table cellpadding=\"0\" cellspacing=\"0\">
-																<tbody>
-																	<tr>
-																		<td style=\"line-height:0px;padding-bottom:4px\">
-																			<table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
-																				<tbody>
-																					<tr>
-																						<td style=\"font-family:Georgia\">
-																							<a href=\"tel:$PHONE_NUMBER\" style=\"text-decoration:none\" target=\"_blank\"><span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$PHONE_NUMBER</span></a>
-																						</td>
-																					</tr>
-																				</tbody>
-																			</table>
-																		</td>
-																		<td style=\"line-height:0px;padding-bottom:4px\">
-																			<table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
-																				<tbody>
-																					<tr>
-																						<td style=\"padding:0px 4px\">
-																							<span style=\"font-family:Georgia;font-weight:bold;color:rgb(33,33,33);vertical-align:2px\">|</span>
-																						</td>
-																						<td style=\"font-family:Georgia\">
-																							<a href=\"#\" style=\"text-decoration:none\" target=\"_blank\"><span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$BUSINESS_NAME</span></a>
-																						</td>
-																					</tr>
-																				</tbody>
-																			</table>
-																		</td>
-																		<td style=\"line-height:0px;padding-bottom:4px\">
-																			<table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
-																				<tbody>
-																					<tr>
-																						<td style=\"padding:0px 4px\">
-																							<span style=\"font-family:Georgia;font-weight:bold;color:rgb(33,33,33);vertical-align:2px\">|</span>
-																						</td>
-																						<td style=\"font-family:Georgia\">
-																							<a href=\"mailto:$EMPLOYEE_EMAIL\" style=\"text-decoration:none\" target=\"_blank\"><span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$EMPLOYEE_EMAIL</span></a>
-																						</td>
-																					</tr>
-																				</tbody>
-																			</table>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-														</td>
-													</tr>
-													<tr>
-														<td>
-															<table cellpadding=\"0\" cellspacing=\"0\">
-																<tbody>
-																	<tr>
-																		<td style=\"line-height:0px;padding-bottom:4px\">
-																			<table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
-																				<tbody>
-																					<tr>
-																						<td style=\"font-family:Georgia\">
-																							<span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$STORE_ADDRESS</span>
-																						</td>
-																					</tr>
-																				</tbody>
-																			</table>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</h3>
-						<a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-						<a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-						<a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-						<a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<br>
-	</div>
-</body>
+  <body>
+    <div>
+      <h5>Kind Regards</h5>
+    </div>
+    <div dir=\"ltr\">
+      <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+        <tbody>
+          <tr>
+            <td style=\"vertical-align:middle\">
+              <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+                <tbody>
+                  <tr>
+                    <td style=\"text-align:center\">
+                      <a href=\"#\" target=\"_blank\">
+                        <img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\">
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+            <td width=\"15\"></td>
+            <td style=\"padding:0px;vertical-align:middle\">
+              <h3 color=\"#000000\" style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
+                <table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
+                  <tbody>
+                    <tr>
+                      <td style=\"line-height:1.08\">
+                        <span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span>
+                        <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE</span>
+                        <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\"> at $BUSINESS_NAME</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
+                        <table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
+                          <tbody>
+                            <tr>
+                              <td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\"line-height:0\">
+                        <table cellpadding=\"0\" cellspacing=\"0\">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <table cellpadding=\"0\" cellspacing=\"0\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\"line-height:0px;padding-bottom:4px\">
+                                        <table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
+                                          <tbody>
+                                            <tr>
+                                              <td style=\"font-family:Georgia\">
+                                                <a href=\"tel:$PHONE_NUMBER\" style=\"text-decoration:none\" target=\"_blank\">
+                                                  <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$PHONE_NUMBER</span>
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                      <td style=\"line-height:0px;padding-bottom:4px\">
+                                        <table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
+                                          <tbody>
+                                            <tr>
+                                              <td style=\"padding:0px 4px\">
+                                                <span style=\"font-family:Georgia;font-weight:bold;color:rgb(33,33,33);vertical-align:2px\">|</span>
+                                              </td>
+                                              <td style=\"font-family:Georgia\">
+                                                <a href=\"#\" style=\"text-decoration:none\" target=\"_blank\">
+                                                  <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$BUSINESS_NAME</span>
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                      <td style=\"line-height:0px;padding-bottom:4px\">
+                                        <table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
+                                          <tbody>
+                                            <tr>
+                                              <td style=\"padding:0px 4px\">
+                                                <span style=\"font-family:Georgia;font-weight:bold;color:rgb(33,33,33);vertical-align:2px\">|</span>
+                                              </td>
+                                              <td style=\"font-family:Georgia\">
+                                                <a href=\"mailto:$EMPLOYEE_EMAIL\" style=\"text-decoration:none\" target=\"_blank\">
+                                                  <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$EMPLOYEE_EMAIL</span>
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <table cellpadding=\"0\" cellspacing=\"0\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\"line-height:0px;padding-bottom:4px\">
+                                        <table cellpadding=\"0\" cellspacing=\"0\" style=\"line-height:14px;font-size:12px;font-family:Georgia\">
+                                          <tbody>
+                                            <tr>
+                                              <td style=\"font-family:Georgia\">
+                                                <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$STORE_ADDRESS</span>
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </h3>
+              <a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+              <a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+              <a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+              <a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+    </div>
+  </body>
 </html>"
 
 # Save the content to an HTML file
