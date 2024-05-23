@@ -29,19 +29,20 @@ EMPLOYEE_TITLE="$5"
 PHONE_NUMBER="$6"
 
 # Define the remaining variables
-BUSINESS_NAME="Saybrook Home"
-LOGO_SRC="https://saybrookbarn.com/sh.png"
-EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
+BUSINESS_NAME=""
+BUSINESS_WEBSITE=""
+LOGO_SRC=""
+EMPLOYEE_NAME="FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
-STORE_ADDRESS="2 Main St Old Saybrook, CT 06475 | 400 Hebron Ave Glastonbury, CT 06033"
-FACEBOOK_URL="https://www.facebook.com/saybrookhome"
-FACEBOOK_IMG_SRC="https://saybrookbarn.com/fb.png"
-INSTAGRAM_URL="https://www.instagram.com/saybrookhome"
-INSTAGRAM_IMG_SRC="https://saybrookbarn.com/ig.png"
-PINTEREST_URL="https://www.pinterest.com/SaybrookHome"
-PINTEREST_IMG_SRC="https://saybrookbarn.com/pt.png"
-YOUTUBE_URL="https://www.youtube.com/Saybrookcountry1/featured"
-YOUTUBE_IMG_SRC="https://saybrookbarn.com/yt.png"
+STORE_ADDRESS=""
+FACEBOOK_URL=""
+FACEBOOK_IMG_SRC=""
+INSTAGRAM_URL=""
+INSTAGRAM_IMG_SRC=""
+PINTEREST_URL=""
+PINTEREST_IMG_SRC=""
+YOUTUBE_URL=""
+YOUTUBE_IMG_SRC=""
 
 
 
@@ -122,7 +123,7 @@ HTML_CONTENT="<html>
                                               </td>
                                               <td style=\"font-family:Georgia\">
                                                 <a href=\"#\" style=\"text-decoration:none\" target=\"_blank\">
-                                                  <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$BUSINESS_NAME</span>
+                                                  <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$BUSINESS_WEBSITE</span>
                                                 </a>
                                               </td>
                                             </tr>
