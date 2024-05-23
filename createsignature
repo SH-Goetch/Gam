@@ -1,10 +1,18 @@
 #!/bin/bash
 
 # Check if the required arguments are provided
-if [ "$#" -ne 6 ]; then
-    echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER"
-    exit 1
+#if [ "$#" -ne 6 ]; then
+ #   echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER"
+  #  exit 1
+#fi
+
+
+# Check for dry-run flag
+DRY_RUN=false
+if [ "$#" -eq 7 ] && [ "$7" == "--dry-run" ]; then
+    DRY_RUN=true
 fi
+
 
 # Full path to the GAM executable
 GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
@@ -21,28 +29,21 @@ EMPLOYEE_TITLE="$5"
 PHONE_NUMBER="$6"
 
 # Define the remaining variables
-BUSINESS_NAME=""
-LOGO_SRC=""
+BUSINESS_NAME="Saybrook Home"
+LOGO_SRC="https://saybrookbarn.com/sh.png"
 EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
-STORE_ADDRESS=""
-FACEBOOK_URL=""
-FACEBOOK_IMG_SRC=""
-INSTAGRAM_URL=""
-INSTAGRAM_IMG_SRC=""
-PINTEREST_URL=""
-PINTEREST_IMG_SRC=""
-YOUTUBE_URL=""
-YOUTUBE_IMG_SRC=""
+STORE_ADDRESS="2 Main St Old Saybrook, CT 06475 | 400 Hebron Ave Glastonbury, CT 06033"
+FACEBOOK_URL="https://www.facebook.com/saybrookhome"
+FACEBOOK_IMG_SRC="https://saybrookbarn.com/fb.png"
+INSTAGRAM_URL="https://www.instagram.com/saybrookhome"
+INSTAGRAM_IMG_SRC="https://saybrookbarn.com/ig.png"
+PINTEREST_URL="https://www.pinterest.com/SaybrookHome"
+PINTEREST_IMG_SRC="https://saybrookbarn.com/pt.png"
+YOUTUBE_URL="https://www.youtube.com/Saybrookcountry1/featured"
+YOUTUBE_IMG_SRC="https://saybrookbarn.com/yt.png"
 
-# Create user using GAM
-$GAM_CMD create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
 
-# Check if user creation was successful
-if [ $? -ne 0 ]; then
-  echo "Failed to create user $EMAIL"
-  exit 1
-fi
 
 # Create the HTML content
 HTML_CONTENT="<html>
@@ -50,52 +51,52 @@ HTML_CONTENT="<html>
     <div>
       <h5>Kind Regards</h5>
     </div>
-    <div dir=\"ltr\">
-      <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-        <tbody>
-          <tr>
-            <td style=\"vertical-align:middle\">
-              <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-                <tbody>
-                  <tr>
-                    <td style=\"text-align:center\">
-                      <a href=\"#\" target=\"_blank\">
-                        <img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\">
-                      </a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-            <td width=\"15\"></td>
-            <td style=\"padding:0px;vertical-align:middle\">
-              <h3 color=\"#000000\" style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
-                <table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
-                  <tbody>
-                    <tr>
-                      <td style=\"line-height:1.08\">
-                        <span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span>
-                        <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE</span>
-                        <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\"> at $BUSINESS_NAME</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
-                        <table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
-                          <tbody>
-                            <tr>
-                              <td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style=\"line-height:0\">
-                        <table cellpadding=\"0\" cellspacing=\"0\">
-                          <tbody>
-                            <tr>
-                              <td>
+         <div dir=\"ltr\">
+           <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+             <tbody>
+               <tr>
+                 <td style=\"vertical-align:top\">
+                   <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+                     <tbody>
+                       <tr>
+                         <td style=\"text-align:center\">
+                           <a href=\"#\" target=\"_blank\">
+                               <img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\">
+                           </a>
+                         </td>
+                       </tr>
+                     </tbody>
+                   </table>
+                 </td>
+                 <td width=\"15\"></td>
+                 <td style=\"padding:0px;vertical-align:middle\">
+                   <h3 color=\"#000000\" style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
+                     <table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
+                       <tbody>
+                         <tr>
+                           <td style=\"line-height:1.08\">
+                             <span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span>
+                             <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE</span>
+                             <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\"> at $BUSINESS_NAME</span>
+                           </td>
+                        </tr>
+                        <tr>
+                            <td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
+                               <table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
+                                   <tbody>
+                                       <tr>
+                                           <td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
+                                       </tr>
+                                   </tbody>
+                               </table>
+                            </td>
+                        </tr>
+                        <tr>
+                           <td style=\"line-height:0\">
+                                <table cellpadding=\"0\" cellspacing=\"0\">
+                                   <tbody>
+                                       <tr>
+                                           <td>
                                 <table cellpadding=\"0\" cellspacing=\"0\">
                                   <tbody>
                                     <tr>
@@ -177,10 +178,10 @@ HTML_CONTENT="<html>
                   </tbody>
                 </table>
               </h3>
-              <a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-              <a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-              <a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
-              <a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:15px\"></a>
+              <a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
+              <a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
+              <a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
+              <a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
             </td>
           </tr>
         </tbody>
@@ -194,6 +195,18 @@ HTML_CONTENT="<html>
 SIGNATURE_FILE="${EMPLOYEE_NAME// /_}.html"
 echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
 
+# Create user using GAM
+
+if [ "$DRY_RUN" = false ]; then
+
+    $GAM_CMD create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
+
+# Check if user creation was successful
+    if [ $? -ne 0 ]; then
+      echo "Failed to create user $EMAIL"
+      exit 1
+    fi
+
 # Update user's signature with gam
 $GAM_CMD user $EMAIL signature file "$SIGNATURE_FILE"
 
@@ -203,5 +216,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+fi
+
 # Notify user of success
+
 echo "User $EMAIL created and signature updated with HTML file $SIGNATURE_FILE."
