@@ -171,7 +171,7 @@ update_user_email() {
 transfer_aliases_to_manager() {
   log "Starting alias transfer process from $USER_EMAIL to $MANAGER_EMAIL"
   
-  # Retrieve aliases from the suspended user
+  # Retrieve aliases from the user
   aliases=$($GAM_CMD print aliases user "$USER_EMAIL" | tail -n +2 | cut -d, -f1)
   
   if [ -z "$aliases" ]; then
@@ -271,7 +271,7 @@ export_email_to_drive() {
 # Transfer Drive data to the manager
 transfer_drive_data() {
   log "Transferring Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
-  if ! $GAM_CMD transfer drive "$SUSPENDED_USER_EMAIL" "$MANAGER_EMAIL"; then
+  if ! $GAM_CMD create datatransfer "$SUSPENDED_USER_EMAIL" "$MANAGER_EMAIL" --transfer_drive; then
     log "ERROR: Failed to transfer Drive data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
     # Do not exit, continue to next step
   else
@@ -282,7 +282,7 @@ transfer_drive_data() {
 # Transfer Calendar data to the manager
 transfer_calendar_data() {
   log "Transferring Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
-  if ! $GAM_CMD transfer calendars "$SUSPENDED_USER_EMAIL" "$MANAGER_EMAIL"; then
+  if ! $GAM_CMD create datatransfer "$SUSPENDED_USER_EMAIL" "$MANAGER_EMAIL" --transfer_calendar; then
     log "ERROR: Failed to transfer Calendar data to manager: $SUSPENDED_USER_EMAIL -> $MANAGER_EMAIL"
     # Do not exit, continue to next step
   else
