@@ -1,11 +1,30 @@
 #!/bin/bash
 
-# Check if the required arguments are provided
-#if [ "$#" -ne 6 ]; then
- #   echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER"
-  #  exit 1
-#fi
+# ==============================
+# Onboarding Script for Users
+# ==============================
 
+# **Description:**
+# This script automates the onboarding process for a new user in a Google Workspace environment.
+# It performs the following actions:
+# 1. Creates a new user account.
+# 2. Sets a temporary password.
+# 3. Generates and applies a Gmail signature.
+# 4. Logs the actions performed.
+
+# **Usage:**
+# ./onboard_user.sh FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER [--dry-run]
+
+# ==============================
+# Configuration
+# ==============================
+
+# Check if the required arguments are provided
+EXPECTED_ARGS=6
+if [ "$#" -lt "$EXPECTED_ARGS" ]; then
+    echo "Usage: $0 FIRST_NAME LAST_NAME EMAIL TEMP_PASSWORD EMPLOYEE_TITLE PHONE_NUMBER [--dry-run]"
+    exit 1
+fi
 
 # Check for dry-run flag
 DRY_RUN=false
@@ -13,8 +32,7 @@ if [ "$#" -eq 7 ] && [ "$7" == "--dry-run" ]; then
     DRY_RUN=true
 fi
 
-
-# Full path to the GAM executable
+# Full path to the GAMADV-XTD3 executable
 GAM_CMD="$HOME/bin/gamadv-xtd3/gam"
 
 # Path to the GAM configuration directory
@@ -28,76 +46,104 @@ TEMP_PASSWORD="$4"
 EMPLOYEE_TITLE="$5"
 PHONE_NUMBER="$6"
 
-# Define the remaining variables
-BUSINESS_NAME=""
-BUSINESS_WEBSITE=""
-LOGO_SRC=""
-EMPLOYEE_NAME="FIRST_NAME $LAST_NAME"
+# Define additional variables required for the signature
+# **Please fill in the following variables with appropriate values before running the script**
+BUSINESS_NAME="Your Business Name"
+BUSINESS_WEBSITE="https://www.yourbusinesswebsite.com"
+LOGO_SRC="https://www.yourbusinesswebsite.com/logo.png"
+STORE_ADDRESS="1234 Business St, City, State, ZIP"
+FACEBOOK_URL="https://www.facebook.com/yourbusiness"
+FACEBOOK_IMG_SRC="https://www.yourbusinesswebsite.com/facebook-icon.png"
+INSTAGRAM_URL="https://www.instagram.com/yourbusiness"
+INSTAGRAM_IMG_SRC="https://www.yourbusinesswebsite.com/instagram-icon.png"
+PINTEREST_URL="https://www.pinterest.com/yourbusiness"
+PINTEREST_IMG_SRC="https://www.yourbusinesswebsite.com/pinterest-icon.png"
+YOUTUBE_URL="https://www.youtube.com/yourbusiness"
+YOUTUBE_IMG_SRC="https://www.yourbusinesswebsite.com/youtube-icon.png"
+
+# Define the employee's full name and email
+EMPLOYEE_NAME="$FIRST_NAME $LAST_NAME"
 EMPLOYEE_EMAIL="$EMAIL"
-STORE_ADDRESS=""
-FACEBOOK_URL=""
-FACEBOOK_IMG_SRC=""
-INSTAGRAM_URL=""
-INSTAGRAM_IMG_SRC=""
-PINTEREST_URL=""
-PINTEREST_IMG_SRC=""
-YOUTUBE_URL=""
-YOUTUBE_IMG_SRC=""
 
+# Log file
+LOG_FILE="onboarding.log"
 
+# ==============================
+# Helper Functions
+# ==============================
 
-# Create the HTML content
-HTML_CONTENT="<html>
+# Log messages with timestamp
+log() {
+    echo "$(date +'%Y-%m-%d %H:%M:%S') INFO: $1" | tee -a "$LOG_FILE"
+}
+
+# Log error messages with timestamp
+log_error() {
+    echo "$(date +'%Y-%m-%d %H:%M:%S') ERROR: $1" | tee -a "$LOG_FILE" >&2
+}
+
+# Exit script with error after logging
+exit_with_error() {
+    log_error "$1"
+    exit 1
+}
+
+# ==============================
+# Main Functionalities
+# ==============================
+
+# Create the HTML content for the Gmail signature
+create_signature() {
+    HTML_CONTENT="<html>
   <body>
     <div>
       <h5>Kind Regards</h5>
     </div>
-         <div dir=\"ltr\">
-           <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-             <tbody>
-               <tr>
-                 <td style=\"vertical-align:top\">
-                   <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
-                     <tbody>
-                       <tr>
-                         <td style=\"text-align:center\">
-                           <a href=\"#\" target=\"_blank\">
-                               <img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\">
-                           </a>
-                         </td>
-                       </tr>
-                     </tbody>
-                   </table>
-                 </td>
-                 <td width=\"15\"></td>
-                 <td style=\"padding:0px;vertical-align:middle\">
-                   <h3 color=\"#000000\" style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
-                     <table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
-                       <tbody>
-                         <tr>
-                           <td style=\"line-height:1.08\">
-                             <span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span>
-                             <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE</span>
-                             <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\"> at $BUSINESS_NAME</span>
-                           </td>
-                        </tr>
-                        <tr>
-                            <td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
-                               <table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
-                                   <tbody>
-                                       <tr>
-                                           <td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
-                                       </tr>
-                                   </tbody>
-                               </table>
-                            </td>
-                        </tr>
-                        <tr>
-                           <td style=\"line-height:0\">
-                                <table cellpadding=\"0\" cellspacing=\"0\">
-                                   <tbody>
-                                       <tr>
-                                           <td>
+    <div dir=\"ltr\">
+      <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+        <tbody>
+          <tr>
+            <td style=\"vertical-align:top\">
+              <table cellpadding=\"0\" cellspacing=\"0\" style=\"vertical-align:-webkit-baseline-middle;font-family:Georgia\">
+                <tbody>
+                  <tr>
+                    <td style=\"text-align:center\">
+                      <a href=\"$BUSINESS_WEBSITE\" target=\"_blank\">
+                        <img src=\"$LOGO_SRC\" style=\"max-width:90px;display:block\" alt=\"Business Logo\">
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+            <td width=\"15\"></td>
+            <td style=\"padding:0px;vertical-align:middle\">
+              <h3 style=\"margin:0px;font-size:16px;color:rgb(0,0,0)\">
+                <table cellpadding=\"0\" cellspacing=\"0\" style=\"font-weight:normal;font-family:Georgia\">
+                  <tbody>
+                    <tr>
+                      <td style=\"line-height:1.08\">
+                        <span style=\"font-size:12px;font-family:Georgia;font-weight:bold\">$EMPLOYEE_NAME</span><br>
+                        <span style=\"font-size:12px;letter-spacing:0px;font-family:Georgia;text-transform:initial\">$EMPLOYEE_TITLE at $BUSINESS_NAME</span><br>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\"line-height:0;padding-top:10px;padding-bottom:10px\">
+                        <table cellspacing=\"0\" cellpadding=\"0\" style=\"width:387px\">
+                          <tbody>
+                            <tr>
+                              <td style=\"line-height:0;font-size:1pt;border-bottom-width:2px;border-bottom-style:solid;border-bottom-color:rgb(0,0,0)\"></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\"line-height:0\">
+                        <table cellpadding=\"0\" cellspacing=\"0\">
+                          <tbody>
+                            <tr>
+                              <td>
                                 <table cellpadding=\"0\" cellspacing=\"0\">
                                   <tbody>
                                     <tr>
@@ -122,7 +168,7 @@ HTML_CONTENT="<html>
                                                 <span style=\"font-family:Georgia;font-weight:bold;color:rgb(33,33,33);vertical-align:2px\">|</span>
                                               </td>
                                               <td style=\"font-family:Georgia\">
-                                                <a href=\"#\" style=\"text-decoration:none\" target=\"_blank\">
+                                                <a href=\"$BUSINESS_WEBSITE\" style=\"text-decoration:none\" target=\"_blank\">
                                                   <span style=\"line-height:1.2;color:rgb(33,33,33);white-space:nowrap\">$BUSINESS_WEBSITE</span>
                                                 </a>
                                               </td>
@@ -179,10 +225,10 @@ HTML_CONTENT="<html>
                   </tbody>
                 </table>
               </h3>
-              <a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
-              <a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
-              <a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
-              <a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\"></a>
+              <a href=\"$FACEBOOK_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$FACEBOOK_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\" alt=\"Facebook\"></a>
+              <a href=\"$INSTAGRAM_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$INSTAGRAM_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\" alt=\"Instagram\"></a>
+              <a href=\"$YOUTUBE_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$YOUTUBE_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\" alt=\"YouTube\"></a>
+              <a href=\"$PINTEREST_URL\" target=\"_blank\"><img width=\"22\" height=\"22\" src=\"$PINTEREST_IMG_SRC\" border=\"0\" style=\"border:none; margin:5px\" alt=\"Pinterest\"></a>
             </td>
           </tr>
         </tbody>
@@ -192,33 +238,56 @@ HTML_CONTENT="<html>
   </body>
 </html>"
 
-# Save the content to an HTML file
-SIGNATURE_FILE="${EMPLOYEE_NAME// /_}.html"
-echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
+    # Save the content to an HTML file
+    SIGNATURE_FILE="${EMPLOYEE_NAME// /_}_signature.html"
+    echo "$HTML_CONTENT" > "$SIGNATURE_FILE"
+    log "Signature file created at $SIGNATURE_FILE"
+}
 
-# Create user using GAM
-
-if [ "$DRY_RUN" = false ]; then
-
-    $GAM_CMD create user $EMAIL firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"
-
-# Check if user creation was successful
-    if [ $? -ne 0 ]; then
-      echo "Failed to create user $EMAIL"
-      exit 1
+# Create a new user using GAM
+create_user() {
+    log "Creating user: $EMAIL"
+    if ! $GAM_CMD create user "$EMAIL" firstname "$FIRST_NAME" lastname "$LAST_NAME" password "$TEMP_PASSWORD"; then
+        exit_with_error "Failed to create user $EMAIL"
     fi
+    log "User $EMAIL created successfully."
+}
 
-# Update user's signature with gam
-$GAM_CMD user $EMAIL signature file "$SIGNATURE_FILE"
+# Update user's signature with GAM
+update_signature() {
+    log "Updating signature for user: $EMAIL"
+    if ! $GAM_CMD user "$EMAIL" signature file "$SIGNATURE_FILE"; then
+        exit_with_error "Failed to update signature for user $EMAIL"
+    fi
+    log "Signature updated successfully for user $EMAIL."
+}
 
-# Check if signature update was successful
-if [ $? -ne 0 ]; then
-  echo "Failed to update signature for user $EMAIL"
-  exit 1
+# ==============================
+# Execution Flow
+# ==============================
+
+# Create the signature HTML file
+create_signature
+
+# Proceed only if not a dry run
+if [ "$DRY_RUN" = false ]; then
+    # Create the user
+    create_user
+
+    # Update the user's signature
+    update_signature
+
+    log "Onboarding process completed for user: $EMAIL"
+else
+    log "Dry run enabled. User creation and signature update steps were skipped."
+    log "Signature file created at $SIGNATURE_FILE"
 fi
 
+# Notify user of success (or dry-run status)
+if [ "$DRY_RUN" = false ]; then
+    echo "User $EMAIL created and signature updated with HTML file $SIGNATURE_FILE."
+else
+    echo "Dry run: User $EMAIL would be created and signature updated with HTML file $SIGNATURE_FILE."
 fi
 
-# Notify user of success
-
-echo "User $EMAIL created and signature updated with HTML file $SIGNATURE_FILE."
+exit 0
